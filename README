@@ -1,0 +1,7 @@
+
+Ubuntu:
+    sudo apt-get install libreadline-dev
+
+Build:
+    gcc *.c -lreadline
+

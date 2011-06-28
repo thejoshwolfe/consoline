@@ -167,6 +167,7 @@ char* async_readline_getpass(const char * prompt)
 
 static char** attempt_completion(const char *text, int start, int end)
 {
+    // disable default completion behavior
     rl_attempted_completion_over = 1;
     return NULL;
 }
