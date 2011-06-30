@@ -14,3 +14,7 @@ Examples:
 There is also a test.c which uses some features of consoline.c that aren't used
 in main.c
 
+NOTE: if you're running python with this program, be sure to use python -u.
+
+TODO: Ctrl+C should optionally kill current line, instead of  kill the program.
+
