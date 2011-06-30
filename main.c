@@ -3,7 +3,7 @@
  * stdout lines from the subprocess are line-buffered.
  */
 
-#include "async_readline.h"
+#include "consoline.h"
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -21,7 +21,7 @@ static void eof_handler()
 }
 static void line_handler(char * line)
 {
-    async_readline_println(line);
+    consoline_println(line);
     write(child_stdin_fd, line, strlen(line));
     static char newline_char = '\n';
     write(child_stdin_fd, &newline_char, 1);
@@ -64,7 +64,7 @@ static void poll_subprocess()
         } else {
             // flush line buffer. don't include newline.
             line_buffer[line_buffer_cursor] = '\0';
-            async_readline_println(line_buffer);
+            consoline_println(line_buffer);
             line_buffer_cursor = 0;
         }
     }
@@ -108,6 +108,7 @@ static void launch_child_process(char ** child_argv)
 int main(int argc, char ** argv)
 {
     if (argc <= 1) {
+        fprintf(stderr, "consoline version 0.0\n", argv[0]);
         fprintf(stderr, "Usage: %s command [args]\n", argv[0]);
         exit(1);
     }
@@ -121,15 +122,15 @@ int main(int argc, char ** argv)
     }
     child_argv[i] = NULL;
 
-    async_readline_init("prog_wrapper", "");
-    atexit(async_readline_deinit);
-    async_readline_set_eof_handler(eof_handler);
-    async_readline_set_line_handler(line_handler);
+    consoline_init("prog_wrapper", "");
+    atexit(consoline_deinit);
+    consoline_set_eof_handler(eof_handler);
+    consoline_set_line_handler(line_handler);
 
     launch_child_process(child_argv);
 
     for (;;) {
-        async_readline_poll();
+        consoline_poll();
         poll_subprocess();
 
         // poll input at 60 Hz or whatever

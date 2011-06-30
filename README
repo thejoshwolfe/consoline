@@ -3,6 +3,5 @@ Ubuntu:
     sudo apt-get install libreadline-dev
 
 Build:
-    gcc test.c async_readline.c -lreadline -o test
-    gcc prog_wrapper.c async_readline.c -lreadline -o prog_wrapper
+    make
 

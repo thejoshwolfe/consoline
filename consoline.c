@@ -3,7 +3,7 @@
  * https://github.com/dpc/xmppconsole/blob/master/src/io.c
  */
 
-#include "async_readline.h"
+#include "consoline.h"
 
 #include <readline/readline.h>
 #include <unistd.h>
@@ -54,7 +54,7 @@ static int handle_enter(int x, int y)
 static void install_line_handler()
 {
     if (rl_bind_key(RETURN, handle_enter)) {
-        async_readline_printfln("failed to bind RETURN");
+        consoline_printfln("failed to bind RETURN");
         abort();
     }
     rl_callback_handler_install(current_prompt, handle_line_fake);
@@ -66,7 +66,7 @@ static void remove_line_handler()
     rl_callback_handler_remove();
 }
 
-void async_readline_poll()
+void consoline_poll()
 {
     struct timeval no_time;
     memset(&no_time, 0, sizeof(no_time));
@@ -83,7 +83,7 @@ void async_readline_poll()
     }
 }
 
-void async_readline_set_prompt(const char * prompt)
+void consoline_set_prompt(const char * prompt)
 {
     current_prompt = prompt;
     rl_set_prompt(current_prompt);
@@ -122,7 +122,7 @@ static void printf_func(void* data)
     vprintf(d->fmt, d->args);
     printf("\n");
 }
-void async_readline_printfln(const char* const fmt, ...)
+void consoline_printfln(const char* const fmt, ...)
 {
     struct printf_data d;
     d.fmt = fmt;
@@ -136,7 +136,7 @@ static void print_func(void* data)
 {
     puts((char *)data);
 }
-void async_readline_println(char* line)
+void consoline_println(char* line)
 {
     async_print(print_func, line);
 }
@@ -153,7 +153,7 @@ void getpass_func(void* d)
     result = getpass(data->prompt);
     *(data->return_pointer) = strdup(result);
 }
-char* async_readline_getpass(const char * prompt)
+char* consoline_getpass(const char * prompt)
 {
     struct getpass_data data;
     data.prompt = prompt;
@@ -172,25 +172,25 @@ static char** attempt_completion(const char *text, int start, int end)
     return NULL;
 }
 
-void async_readline_init(const char * profile_name, const char * prompt)
+void consoline_init(const char * profile_name, const char * prompt)
 {
     FD_ZERO(&stdin_fd_set);
     rl_readline_name = profile_name;
-    async_readline_set_prompt(prompt);
+    consoline_set_prompt(prompt);
     install_line_handler();
     rl_attempted_completion_function = attempt_completion;
 }
 
-void async_readline_set_eof_handler(void (*eof_handler)())
+void consoline_set_eof_handler(void (*eof_handler)())
 {
     current_eof_handler = eof_handler;
 }
-void async_readline_set_line_handler(void (*line_handler)(char* line))
+void consoline_set_line_handler(void (*line_handler)(char* line))
 {
     current_line_handler = line_handler;
 }
 
-void async_readline_deinit()
+void consoline_deinit()
 {
     rl_set_prompt("");
     rl_replace_line("", 0);
