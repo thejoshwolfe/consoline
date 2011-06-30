@@ -1,7 +1,16 @@
+consoline wraps a program's invocation with GNU Readline and prevents
+asynchronous stdout from interrupting a line of input being typed by the user.
 
-Ubuntu:
+Build (Ubuntu):
     sudo apt-get install libreadline-dev
-
-Build:
     make
+
+Usage:
+    consoline command [args]
+Examples:
+    consoline bash -c "sleep 3; echo hello; bash"
+
+
+There is also a test.c which uses some features of consoline.c that aren't used
+in main.c
 
