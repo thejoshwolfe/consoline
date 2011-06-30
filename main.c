@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <wait.h>
 
 static int child_pid;
 static int child_stdin_fd;
