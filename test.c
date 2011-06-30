@@ -13,7 +13,7 @@ static void eof_handler()
 {
     exit(0);
 }
-static void line_handler(const char * line)
+static void line_handler(char * line)
 {
     async_readline_println(line);
     if (strcmp(line, "quit") == 0) {

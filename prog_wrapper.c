@@ -1,5 +1,6 @@
 /*
  * This program invokes a subprocess and wraps its stderr/stdout and stdin asynchronously.
+ * stdout lines from the subprocess are line-buffered.
  */
 
 #include "async_readline.h"
@@ -16,15 +17,22 @@ static fd_set child_stdout_fd_set;
 
 static void eof_handler()
 {
-    // TODO: push eof down
+    close(child_stdin_fd);
 }
-static void line_handler(const char * line)
+static void line_handler(char * line)
 {
     async_readline_println(line);
+    write(child_stdin_fd, line, strlen(line));
+    static char newline_char = '\n';
+    write(child_stdin_fd, &newline_char, 1);
 }
 
 static void poll_subprocess()
 {
+    static int line_buffer_capacity = 0x100;
+    static char * line_buffer = NULL;
+    static int line_buffer_cursor = 0;
+
     struct timeval no_time;
     memset(&no_time, 0, sizeof(no_time));
 
@@ -41,17 +49,28 @@ static void poll_subprocess()
         int read_count = read(child_stdout_fd, &c, 1);
         if (read_count == 0) {
             // stdout has been closed. wait and terminate with child's exit code.
-            exit(0);
             int status;
             waitpid(child_pid, &status, 0);
             exit(WEXITSTATUS(status));
         }
-        // TODO: print single character
-        async_readline_printfln("%c", c);
+        // expand buffer if needed
+        if (line_buffer == NULL || !(line_buffer_cursor + 1 < line_buffer_capacity)) {
+            line_buffer_capacity *= 2;
+            line_buffer = (char *)realloc(line_buffer, line_buffer_capacity * sizeof(char));
+        }
+        if (c != '\n') {
+            // buffer the char
+            line_buffer[line_buffer_cursor++] = c;
+        } else {
+            // flush line buffer. don't include newline.
+            line_buffer[line_buffer_cursor] = '\0';
+            async_readline_println(line_buffer);
+            line_buffer_cursor = 0;
+        }
     }
 }
 
-static void launch_child_process(int argc, char ** argv)
+static void launch_child_process(char ** child_argv)
 {
     int child_stdin_pipe[2];
     if (pipe(child_stdin_pipe) == -1)
@@ -73,32 +92,41 @@ static void launch_child_process(int argc, char ** argv)
         close(child_stdout_pipe[0]);
         close(child_stdout_pipe[1]);
         // exec
-        char** child_argv = (char **)malloc(argc * sizeof(char *));
-        int i;
-        for (i = 1; i < argc; i++)
-            child_argv[i - 1] = argv[i];
-        child_argv[argc - 1] = NULL;
-        execvp(argv[0], child_argv);
+        execvp(child_argv[0], child_argv);
         // failure
-        fprintf(stderr, "Failed to start process %s\n", argv[0]);
+        fprintf(stderr, "ERROR: Unable to start process: %s\n", child_argv[0]);
         exit(1);
     }
     // parent
     close(child_stdin_pipe[0]);
     child_stdin_fd = child_stdin_pipe[1];
     child_stdout_fd = child_stdout_pipe[0];
-    close(child_stdout_pipe[0]);
+    close(child_stdout_pipe[1]);
     FD_ZERO(&child_stdout_fd_set);
 }
 
 int main(int argc, char ** argv)
 {
+    if (argc <= 1) {
+        fprintf(stderr, "Usage: %s command [args]\n", argv[0]);
+        exit(1);
+    }
+    // prepare the child's command
+    int child_argv_size = argc;
+    int child_argv_offset = -1;
+    char** child_argv = (char**)malloc(child_argv_size * sizeof(char *));
+    int i;
+    for (i = 0; i < child_argv_size - 1; i++) {
+        child_argv[i] = argv[i - child_argv_offset];
+    }
+    child_argv[i] = NULL;
+
     async_readline_init("prog_wrapper", "");
     atexit(async_readline_deinit);
     async_readline_set_eof_handler(eof_handler);
     async_readline_set_line_handler(line_handler);
 
-    launch_child_process(argc - 1, argv + 1);
+    launch_child_process(child_argv);
 
     for (;;) {
         async_readline_poll();
@@ -110,6 +138,5 @@ int main(int argc, char ** argv)
         requested.tv_nsec = 1000000000 / 60;
         nanosleep(&requested, NULL);
     }
-    return 0;
 }
 

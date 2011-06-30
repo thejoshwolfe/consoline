@@ -13,7 +13,7 @@
 static const char* current_prompt = NULL;
 static fd_set stdin_fd_set;
 static void (*current_eof_handler)() = NULL;
-static void (*current_line_handler)(const char * line) = NULL;
+static void (*current_line_handler)(char * line) = NULL;
 
 static void handle_line_fake(char* line)
 {
@@ -136,7 +136,7 @@ static void print_func(void* data)
 {
     puts((char *)data);
 }
-void async_readline_println(char * line)
+void async_readline_println(char* line)
 {
     async_print(print_func, line);
 }
@@ -185,7 +185,7 @@ void async_readline_set_eof_handler(void (*eof_handler)())
 {
     current_eof_handler = eof_handler;
 }
-void async_readline_set_line_handler(void (*line_handler)(const char* line))
+void async_readline_set_line_handler(void (*line_handler)(char* line))
 {
     current_line_handler = line_handler;
 }
