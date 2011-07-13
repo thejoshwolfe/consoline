@@ -6,7 +6,7 @@ consoline: consoline.c consoline.h main.c
 	gcc consoline.c main.c -lreadline -o $@
 
 test: consoline.c consoline.h test.c
-	gcc consoline.c test.c -lreadline -o $@
+	gcc -g consoline.c test.c -lreadline -o $@
 
 .PHONEY: clean
 clean:

@@ -14,6 +14,7 @@ static const char* current_prompt = NULL;
 static fd_set stdin_fd_set;
 static void (*current_eof_handler)() = NULL;
 static void (*current_line_handler)(char * line) = NULL;
+static char** (*current_completion_handler)(char * line, int start, int end, const char * text) = NULL;
 
 static void handle_line_fake(char* line)
 {
@@ -145,7 +146,7 @@ struct getpass_data {
     const char * prompt;
     char ** return_pointer;
 };
-void getpass_func(void* d)
+static void getpass_func(void* d)
 {
     struct getpass_data* data = (struct getpass_data*)d;
     char* result;
@@ -165,9 +166,32 @@ char* consoline_getpass(const char * prompt)
     return result;
 }
 
+static char ** current_matches = NULL;
+static char * match_generator(const char * text, int index)
+{
+    return current_matches[index];
+}
+
 static char** attempt_completion(const char *text, int start, int end)
 {
-    // disable default completion behavior
+    if (current_completion_handler != NULL) {
+        // try completion
+        char ** matches = current_completion_handler(rl_line_buffer, start, end, text);
+        if (matches != NULL) {
+            // array of some length given
+            if (matches[0] != NULL) {
+                // non-empty array given. we have suggestions
+                if (current_matches != NULL)
+                    free(current_matches);
+                current_matches = matches;
+                return rl_completion_matches(text, match_generator);
+            }
+            // delete the empty array
+            free(matches);
+        }
+    }
+    // no suggestions.
+    // disable default completion behavior.
     rl_attempted_completion_over = 1;
     return NULL;
 }
@@ -188,6 +212,10 @@ void consoline_set_eof_handler(void (*eof_handler)())
 void consoline_set_line_handler(void (*line_handler)(char* line))
 {
     current_line_handler = line_handler;
+}
+void consoline_set_completion_handler(char** (*completion_handler)(char * line, int start, int end, const char * text))
+{
+    current_completion_handler = completion_handler;
 }
 
 void consoline_deinit()
