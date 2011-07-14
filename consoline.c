@@ -91,12 +91,19 @@ static void remove_line_handler()
     rl_callback_handler_remove();
 }
 
+static char pending_ctrl_c = 0;
 void consoline_poll()
 {
     struct timeval no_time;
     memset(&no_time, 0, sizeof(no_time));
 
     for (;;) {
+        if (pending_ctrl_c) {
+            pending_ctrl_c = 0;
+            done_with_input_line();
+            // print the prompt
+            rl_redisplay();
+        }
         FD_SET(STDIN_FILENO, &stdin_fd_set);
         int count = select(FD_SETSIZE, &stdin_fd_set, NULL, NULL, &no_time);
         if (count < 0) {
@@ -136,9 +143,8 @@ static void signal_handler(int code)
 {
     switch (code) {
         case SIGINT:
-            done_with_input_line();
-            // print the prompt
-            rl_redisplay();
+            // don't do anything non-trivial in a signal handler
+            pending_ctrl_c = 1;
             break;
         case SIGQUIT:
         case SIGTERM:
