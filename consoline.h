@@ -15,9 +15,10 @@ void consoline_set_completion_handler(char** (*completion_handler)(char * line, 
 void consoline_set_prompt(const char * prompt);
 void consoline_set_leave_entered_lines_on_stdout(char bool_value);
 
-// for some reason, readline's ctrl+c handler is broken.
-// we gotta do it ourselves.
+// enables bash-like ctrl+c, rather than killing the process
 void consoline_set_ctrl_c_handled(char bool_value);
+// only call this as a child process after fork, before exec, if ctrl+c is handled in the parent.
+void consoline_ignore_ctrl_c();
 
 void consoline_println(char* line);
 void consoline_printfln(const char* const fmt, ...);

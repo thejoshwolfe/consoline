@@ -25,30 +25,5 @@ For more info on the consoline core, see consoline.h.
 
 For more info on the consoline program:
 
-TODO: move this to ./consoline --help.
-
-Usage:
-    consoline [consoline_options] command [command_args]
-
-Options: TODO: implement these
-    -c
-            Leave the Ctrl+C behavior alone as a SIGINT signal. The default is
-            for Ctrl+C to behave like it does in bash.
-
-    --no-completion
-            Turn off completion. The default is to complete from a database of
-            all words seen so far in the stdout and stdin.
-
-    --hide-entered-lines
-            After lines are typed, make them disappear instead of staying on
-            stdout.
-
-    --prompt=[PROMPT]
-            use prompt PROMPT. Default is "".
-
-Examples:
-    consoline bash -c "sleep 3; echo hello; bash"
-
-
 NOTE: if you're running python with this program, be sure to use python -u.
 

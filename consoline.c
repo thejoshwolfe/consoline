@@ -171,6 +171,10 @@ void consoline_set_ctrl_c_handled(char bool_value)
     if (!bool_value)
         rl_set_signals();
 }
+void consoline_ignore_ctrl_c()
+{
+    set_signal_handlers(SIG_IGN);
+}
 
 static void async_print(void (*print_func)(void*), void* data)
 {
