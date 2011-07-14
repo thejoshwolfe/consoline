@@ -1,20 +1,54 @@
-consoline wraps a program's invocation with GNU Readline and prevents
-asynchronous stdout from interrupting a line of input being typed by the user.
+consoline is a GNU Readline wrapper.
+- Features/Limitations:
+    - Simplified interface to GNU Readline including dynamic completion.
+    - Don't use stdio.h. use consoline_println() or consoline_printfln(). You
+      must print entire lines a time.
+    - Instead of blocking on a getter function, you poll on an interval and
+      react to lines of stdin with a callback function.
+    - Printing asynchronously while the user is typing a line of stdin does not
+      interrupt the stdin line; it prints above it.
+- The core is contained in consoline.c and consoline.h, which are ready to be
+  dropped into a C or C++ project or be built into a library.
+- The program 'consoline' is the main target of the Makefil and defined in
+  main.c. It invokes a program and uses consoline to wrap stdin/stdout.
+- There is also a test.c which uses all the consoline core features. Build it
+  with 'make test'.
 
-Build (Ubuntu):
+
+Dependencies (Ubuntu):
     sudo apt-get install libreadline-dev
+
+Build:
     make
 
+For more info on the consoline core, see consoline.h.
+
+For more info on the consoline program:
+
+TODO: move this to ./consoline --help.
+
 Usage:
-    consoline command [args]
+    consoline [consoline_options] command [command_args]
+
+Options: TODO: implement these
+    -c
+            Leave the Ctrl+C behavior alone as a SIGINT signal. The default is
+            for Ctrl+C to behave like it does in bash.
+
+    --no-completion
+            Turn off completion. The default is to complete from a database of
+            all words seen so far in the stdout and stdin.
+
+    --hide-entered-lines
+            After lines are typed, make them disappear instead of staying on
+            stdout.
+
+    --prompt=[PROMPT]
+            use prompt PROMPT. Default is "".
+
 Examples:
     consoline bash -c "sleep 3; echo hello; bash"
 
 
-There is also a test.c which uses some features of consoline.c that aren't used
-in main.c. Build it with 'make test'.
-
 NOTE: if you're running python with this program, be sure to use python -u.
-
-TODO: Ctrl+C should optionally kill current line, instead of kill the program.
 

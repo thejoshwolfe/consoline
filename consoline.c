@@ -164,6 +164,7 @@ void consoline_set_ctrl_c_handled(char bool_value)
         return;
     ctrl_c_handled = bool_value;
     rl_catch_signals = !bool_value;
+    // register the one that actually does handle it second.
     if (bool_value)
         rl_set_signals();
     set_signal_handlers(bool_value ? signal_handler : SIG_DFL);
