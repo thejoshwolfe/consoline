@@ -12,7 +12,7 @@ consoline is a GNU Readline wrapper.
 - The program 'consoline' is the main target of the Makefil and defined in
   main.c. It invokes a program and uses consoline to wrap stdin/stdout.
 - There is also a test.c which uses all the consoline core features. Build it
-  with 'make test'.
+  with 'make test'. Run ./test and press the tab key twice to see its commands.
 
 
 Dependencies (Ubuntu):
@@ -23,7 +23,8 @@ Build:
 
 For more info on the consoline core, see consoline.h.
 
-For more info on the consoline program:
+For more info on the consoline program, see the top of main.c, or run
+./consoline --help.
 
 NOTE: if you're running python with this program, be sure to use python -u.
 
