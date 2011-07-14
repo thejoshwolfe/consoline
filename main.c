@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 #include <wait.h>
 
 static int child_pid;
@@ -109,7 +110,7 @@ static void launch_child_process(char ** child_argv)
 int main(int argc, char ** argv)
 {
     if (argc <= 1) {
-        fprintf(stderr, "consoline version 0.0\n", argv[0]);
+        fprintf(stderr, "consoline version 0.0\n");
         fprintf(stderr, "Usage: %s command [args]\n", argv[0]);
         exit(1);
     }

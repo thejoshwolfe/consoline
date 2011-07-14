@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 static char printing = 1;
 
@@ -19,14 +20,18 @@ static void eof_handler()
 #define PASSWORD_COMMAND "password"
 #define STOP_COMMAND "stop"
 #define START_COMMAND "start"
+#define SHOW_COMMAND "show"
+#define HIDE_COMMAND "hide"
 static char * all_commands[] = {
     QUIT_COMMAND,
     PASSWORD_COMMAND,
     STOP_COMMAND,
     START_COMMAND,
+    SHOW_COMMAND,
+    HIDE_COMMAND,
     NULL,
 };
-char * strip_spaces(char * line)
+static char * strip_spaces(char * line)
 {
     int line_len = strlen(line);
     // skip leading spaces
@@ -51,7 +56,6 @@ char * strip_spaces(char * line)
 static void line_handler(char * line)
 {
     char * stripped_line = strip_spaces(line);
-    consoline_println(stripped_line);
     if (strcmp(stripped_line, QUIT_COMMAND) == 0) {
         exit(0);
     } else if (strcmp(stripped_line, PASSWORD_COMMAND) == 0) {
@@ -62,6 +66,10 @@ static void line_handler(char * line)
         printing = 0;
     } else if (strcmp(stripped_line, START_COMMAND) == 0) {
         printing = 1;
+    } else if (strcmp(stripped_line, SHOW_COMMAND) == 0) {
+        consoline_set_leave_entered_lines_on_stdout(1);
+    } else if (strcmp(stripped_line, HIDE_COMMAND) == 0) {
+        consoline_set_leave_entered_lines_on_stdout(0);
     } else if (strcmp(stripped_line, ">>>") == 0) {
         consoline_set_prompt(">>> ");
     } else if (strcmp(stripped_line, "") == 0) {
@@ -91,9 +99,10 @@ int main()
     consoline_set_eof_handler(eof_handler);
     consoline_set_line_handler(line_handler);
     consoline_set_completion_handler(completion_handler);
+    //consoline_set_ctrl_c_handled();
 
     int i;
-    for (i = 0;;i++) {
+    for (i = 0;; i++) {
         if (printing && i % 60 == 0)
             consoline_printfln("async %d", i / 60);
         consoline_poll();

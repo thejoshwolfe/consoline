@@ -16,5 +16,5 @@ in main.c. Build it with 'make test'.
 
 NOTE: if you're running python with this program, be sure to use python -u.
 
-TODO: Ctrl+C should optionally kill current line, instead of  kill the program.
+TODO: Ctrl+C should optionally kill current line, instead of kill the program.
 
