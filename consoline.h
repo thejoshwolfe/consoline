@@ -15,7 +15,9 @@ void consoline_set_completion_handler(char** (*completion_handler)(char * line, 
 void consoline_set_prompt(const char * prompt);
 void consoline_set_leave_entered_lines_on_stdout(char bool_value);
 
-void consoline_set_ctrl_c_handled();
+// for some reason, readline's ctrl+c handler is broken.
+// we gotta do it ourselves.
+void consoline_set_ctrl_c_handled(char bool_value);
 
 void consoline_println(char* line);
 void consoline_printfln(const char* const fmt, ...);

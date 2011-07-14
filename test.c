@@ -99,7 +99,7 @@ int main()
     consoline_set_eof_handler(eof_handler);
     consoline_set_line_handler(line_handler);
     consoline_set_completion_handler(completion_handler);
-    //consoline_set_ctrl_c_handled();
+    consoline_set_ctrl_c_handled(1);
 
     int i;
     for (i = 0;; i++) {

@@ -100,11 +100,8 @@ void consoline_poll()
         FD_SET(STDIN_FILENO, &stdin_fd_set);
         int count = select(FD_SETSIZE, &stdin_fd_set, NULL, NULL, &no_time);
         if (count < 0) {
-            fprintf(stderr, "Error reading stdin: %d\n", errno);
-            fprintf(stderr, "EBADF %d\n", EBADF);
-            fprintf(stderr, "EINTR %d\n", EINTR);
-            fprintf(stderr, "EINVAL %d\n", EINVAL);
-            fprintf(stderr, "ENOMEM %d\n", ENOMEM);
+            if (errno == EINTR)
+                continue; // ignore and try again
             exit(1);
         } else if (count == 0) {
             return;
@@ -124,28 +121,48 @@ void consoline_set_leave_entered_lines_on_stdout(char bool_value)
     current_leave_entered_lines_on_stdout = bool_value;
 }
 
+static void set_signal_handlers(void (*handler)(int code))
+{
+    struct sigaction handler_info;
+    handler_info.sa_handler = handler;
+    sigemptyset(&handler_info.sa_mask);
+    handler_info.sa_flags = 0;
+    sigaction(SIGINT, &handler_info, NULL);
+    sigaction(SIGQUIT, &handler_info, NULL);
+    sigaction(SIGTERM, &handler_info, NULL);
+}
+
 static void signal_handler(int code)
 {
-    done_with_input_line();
-    // print the prompt
-    rl_redisplay();
+    switch (code) {
+        case SIGINT:
+            done_with_input_line();
+            // print the prompt
+            rl_redisplay();
+            break;
+        case SIGQUIT:
+        case SIGTERM:
+            // cleanup readline
+            rl_cleanup_after_signal();
+            // detach this handler and resend to ourselves
+            set_signal_handlers(SIG_DFL);
+            kill(getpid(), code);
+            break;
+    }
 }
 
 static char ctrl_c_handled = 0;
-void consoline_set_ctrl_c_handled()
+void consoline_set_ctrl_c_handled(char bool_value)
 {
-    if (ctrl_c_handled)
+    if (ctrl_c_handled == bool_value)
         return;
-    ctrl_c_handled = 1;
-    // for some reason, readline's ctrl+c handler is broken.
-    // we gotta do it ourselves.
-    rl_catch_signals = 0;
-    rl_set_signals();
-    struct sigaction sigint_handler;
-    sigint_handler.sa_handler = signal_handler;
-    sigemptyset(&sigint_handler.sa_mask);
-    sigint_handler.sa_flags = 0;
-    sigaction(SIGINT, &sigint_handler, NULL);
+    ctrl_c_handled = bool_value;
+    rl_catch_signals = !bool_value;
+    if (bool_value)
+        rl_set_signals();
+    set_signal_handlers(bool_value ? signal_handler : SIG_DFL);
+    if (!bool_value)
+        rl_set_signals();
 }
 
 static void async_print(void (*print_func)(void*), void* data)
@@ -254,9 +271,14 @@ void consoline_init(const char * profile_name, const char * prompt)
 {
     FD_ZERO(&stdin_fd_set);
     rl_readline_name = profile_name;
+    rl_attempted_completion_function = attempt_completion;
+
     consoline_set_prompt(prompt);
     install_line_handler();
-    rl_attempted_completion_function = attempt_completion;
+
+    // doing this here makes things work better for some reason
+    consoline_set_ctrl_c_handled(1);
+    consoline_set_ctrl_c_handled(0);
 }
 
 void consoline_set_eof_handler(void (*eof_handler)())
