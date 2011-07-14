@@ -33,6 +33,7 @@ const char const * const usage[] = {
 #include "consoline.h"
 
 #include <unistd.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -75,6 +76,8 @@ static void poll_subprocess()
         FD_SET(child_stdout_fd, &child_stdout_fd_set);
         int ready_count = select(FD_SETSIZE, &child_stdout_fd_set, NULL, NULL, &no_time);
         if (ready_count < 0) {
+            if (errno == EINTR)
+                continue;
             exit(1);
         } else if (ready_count == 0) {
             return;
@@ -182,7 +185,7 @@ int main(int argc, char ** argv)
         child_argv[i] = argv[i + child_argv_start];
     child_argv[i] = NULL;
 
-    consoline_init("prog_wrapper", prompt);
+    consoline_init("consoline", prompt);
     atexit(consoline_deinit);
     consoline_set_eof_handler(eof_handler);
     consoline_set_line_handler(line_handler);
