@@ -3,7 +3,7 @@
 all: consoline
 
 consoline: main.c consoline.c consoline.h HistoryDatabase.c HistoryDatabase.h RbTree.c RbTree.h
-	gcc -Wall main.c consoline.c HistoryDatabase.c RbTree.c -lreadline -o $@
+	gcc -Wall -g main.c consoline.c HistoryDatabase.c RbTree.c -lreadline -o $@
 
 test: consoline.c consoline.h test.c
 	gcc -Wall -g consoline.c test.c -lreadline -o $@

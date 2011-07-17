@@ -82,7 +82,7 @@ typedef struct {
     char * prefix;
     int prefix_len;
     int matches_cap;
-    char ** matches;
+    WordData ** matches;
     int matches_len;
 } MatchCollect;
 
@@ -93,29 +93,65 @@ static char match_visitor(RbTree_Node * node, void * data)
         return 0;
     // it's a match
     WordData * word_data = (WordData *)node->value;
-    match_collector->matches[match_collector->matches_len++] = strdup(word_data->text);
+    match_collector->matches[match_collector->matches_len++] = word_data;
     if (match_collector->matches_len >= match_collector->matches_cap) {
         // expand capacity
         match_collector->matches_cap *= 2;
-        match_collector->matches = (char **)realloc(match_collector->matches, match_collector->matches_cap * sizeof(char *));
+        match_collector->matches = (WordData **)realloc(match_collector->matches, match_collector->matches_cap * sizeof(WordData *));
     }
     return 1;
 }
 
+static int compare_negative_popularity(WordData * left, WordData * right)
+{
+    int hit_count_difference = left->hit_count - right->hit_count;
+    if (hit_count_difference != 0)
+        return -hit_count_difference;
+    return -(left->last_hit_time - right->last_hit_time);
+}
 char ** HistoryDatabase_prefix_matches(HistoryDatabase * database, char * prefix)
 {
-    InternalHistoryDatabase * secret_data = (InternalHistoryDatabase *)database->_secret_data;
-    char * key_prefix = key_for_word(secret_data->is_case_senssitive, prefix);
-    MatchCollect match_collector;
-    match_collector.prefix = key_prefix;
-    match_collector.prefix_len = strlen(key_prefix);
-    match_collector.matches_cap = 0x10;
-    match_collector.matches = (char **)malloc(match_collector.matches_cap * sizeof(char *));
-    match_collector.matches_len = 0;
-    RbTree_traverse_starting_at(secret_data->tree, key_prefix, match_visitor, &match_collector);
-    if (key_prefix != prefix)
-        free(key_prefix);
-    match_collector.matches[match_collector.matches_len] = NULL;
-    return match_collector.matches;
+    WordData ** matches;
+    int matches_len;
+    // collect the prefix matches
+    {
+        InternalHistoryDatabase * secret_data = (InternalHistoryDatabase *)database->_secret_data;
+        char * key_prefix = key_for_word(secret_data->is_case_senssitive, prefix);
+        MatchCollect match_collector;
+        match_collector.prefix = key_prefix;
+        match_collector.prefix_len = strlen(key_prefix);
+        match_collector.matches_cap = 0x10;
+        match_collector.matches = (WordData **)malloc(match_collector.matches_cap * sizeof(WordData *));
+        match_collector.matches_len = 0;
+        RbTree_traverse_starting_at(secret_data->tree, key_prefix, match_visitor, &match_collector);
+        if (key_prefix != prefix)
+            free(key_prefix);
+        matches = match_collector.matches;
+        matches_len = match_collector.matches_len;
+    }
+    // sort results by most popular
+    {
+        // insertion sort
+        int i;
+        for (i = 1; i < matches_len; i++) {
+            WordData * insert_this = matches[i];
+            int j;
+            for (j = i - 1; j >= 0; j--) {
+                if (compare_negative_popularity(matches[j], insert_this) < 0)
+                    break;
+                matches[j + 1] = matches[j];
+            }
+            matches[j + 1] = insert_this;
+        }
+    }
+    // return just the strings
+    {
+        char ** results = (char **)malloc((matches_len + 1) * sizeof(char *));
+        int i;
+        for (i = 0; i < matches_len; i++)
+            results[i] = strdup(matches[i]->text);
+        results[matches_len] = NULL;
+        return results;
+    }
 }
 
