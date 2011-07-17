@@ -16,6 +16,7 @@ void consoline_set_eof_handler(void (*eof_handler)());
 void consoline_set_line_handler(void (*line_handler)(char* line));
 // return an expendable null-terminated array of expendable null-terminated strings.
 // returning NULL or an empty array indicates no suggestions.
+// results are not sorted.
 void consoline_set_completion_handler(char** (*completion_handler)(char * line, int start, int end, const char * text));
 // like all other string return values, delete it when you done with it.
 char * consoline_get_completion_separators();

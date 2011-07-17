@@ -28,6 +28,11 @@ const char const * const usage[] = {
     "Examples:",
     "    consoline bash -c \"sleep 3; echo hello; bash\"",
     "",
+    "To enable cycle-through completion behavior, add this to you ~/.inputrc:",
+    "    $if consoline"
+    "        \"\\t\": menu-complete",
+    "    $endif",
+    "",
 };
 
 #include "consoline.h"

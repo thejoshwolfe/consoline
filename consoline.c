@@ -282,7 +282,9 @@ void consoline_init(const char * profile_name, const char * prompt)
 {
     FD_ZERO(&stdin_fd_set);
     rl_readline_name = profile_name;
+    rl_initialize();
     rl_attempted_completion_function = attempt_completion;
+    rl_sort_completion_matches = 0;
 
     consoline_set_prompt(prompt);
     install_line_handler();
