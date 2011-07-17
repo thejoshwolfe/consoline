@@ -31,6 +31,7 @@ const char const * const usage[] = {
 };
 
 #include "consoline.h"
+#include "HistoryDatabase.h"
 
 #include <unistd.h>
 #include <errno.h>
@@ -45,7 +46,52 @@ static int child_stdin_fd;
 static int child_stdout_fd;
 static fd_set child_stdout_fd_set;
 static char use_completion = 1;
+static HistoryDatabase * history_database;
 static char handle_ctrl_c = 1;
+
+static char ** split(char * string)
+{
+    int result_cap = 0x10;
+    char ** result = (char **)malloc(result_cap * sizeof(char *));
+    int result_size = 0;
+
+    int word_start = 0;
+    int i;
+    for (i = 0; ; i++) {
+        if (string[i] == ' ' || string[i] == '\0') {
+            // end of a word
+            int len = i - word_start;
+            if (len != 0) {
+                result[result_size++] = strndup(&string[word_start], len);
+                if (result_size == result_cap) {
+                    result_cap *= 2;
+                    result = (char **)realloc(result, result_cap * sizeof(char *));
+                }
+            }
+            word_start = i + 1;
+        }
+        if (string[i] == '\0')
+            break;
+    }
+    return result;
+}
+static void register_words(char * line)
+{
+    if (!use_completion)
+        return;
+    char ** words = split(line);
+    int i;
+    for (i = 0; words[i] != NULL; i++) {
+        HistoryDatabase_add(history_database, words[i]);
+        free(words[i]);
+    }
+    free(words);
+}
+static char ** completion_handler(char * line, int start, int end, const char * text)
+{
+    return HistoryDatabase_prefix_matches(history_database, (char *)text);
+}
+
 
 static void eof_handler()
 {
@@ -56,11 +102,7 @@ static void line_handler(char * line)
     write(child_stdin_fd, line, strlen(line));
     static char newline_char = '\n';
     write(child_stdin_fd, &newline_char, 1);
-}
-
-static char ** completion_handler(char * line, int start, int end, const char * text)
-{
-    return NULL;
+    register_words(line);
 }
 
 static void poll_subprocess()
@@ -103,6 +145,7 @@ static void poll_subprocess()
             // flush line buffer. don't include newline.
             line_buffer[line_buffer_cursor] = '\0';
             consoline_println(line_buffer);
+            register_words(line_buffer);
             line_buffer_cursor = 0;
         }
     }
@@ -175,6 +218,8 @@ int main(int argc, char ** argv)
             print_usage_and_exit();
         }
     }
+    if (use_completion)
+        history_database = HistoryDatabase_create(0);
     int child_argv_start = i;
     int child_argv_size = argc - child_argv_start + 1;
     if (child_argv_size <= 1)

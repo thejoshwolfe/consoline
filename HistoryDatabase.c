@@ -68,7 +68,7 @@ void HistoryDatabase_add(HistoryDatabase * database, char * word)
     WordData * word_data = (WordData *)RbTree_get(secret_data->tree, key);
     if (word_data == NULL) {
         word_data = (WordData *)malloc(sizeof(WordData));
-        word_data->text = word;
+        word_data->text = strdup(word);
         word_data->hit_count = 0;
         RbTree_put(secret_data->tree, strdup(key), word_data);
     }
