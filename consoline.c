@@ -304,6 +304,10 @@ void consoline_set_completion_handler(char** (*completion_handler)(char * line, 
 {
     current_completion_handler = completion_handler;
 }
+char * consoline_get_completion_separators()
+{
+    return strdup(rl_basic_word_break_characters);
+}
 
 void consoline_deinit()
 {

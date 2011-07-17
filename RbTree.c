@@ -1,6 +1,8 @@
-// adapted from the location described below.
-
-// original copyright:
+/*
+ * adapted from the location described below.
+ *
+ * original copyright:
+ */
 
 /* Copyright (c) 2011 the authors listed at the following URL, and/or
 the authors of referenced articles or incorporated external code:

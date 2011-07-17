@@ -49,6 +49,15 @@ static char use_completion = 1;
 static HistoryDatabase * history_database;
 static char handle_ctrl_c = 1;
 
+static char is_seperator_char[256];
+static void init_seperator_chars()
+{
+    char * seperator_chars = consoline_get_completion_separators();
+    int i;
+    for (i = 0; seperator_chars[i] != '\0'; i++)
+        is_seperator_char[(int)seperator_chars[i]] = 1;
+    free(seperator_chars);
+}
 static char ** split(char * string)
 {
     int result_cap = 0x10;
@@ -58,11 +67,11 @@ static char ** split(char * string)
     int word_start = 0;
     int i;
     for (i = 0; ; i++) {
-        if (string[i] == ' ' || string[i] == '\0') {
+        if (is_seperator_char[(int)string[i]] || string[i] == '\0') {
             // end of a word
-            int len = i - word_start;
-            if (len != 0) {
-                result[result_size++] = strndup(&string[word_start], len);
+            int word_len = i - word_start;
+            if (word_len != 0) {
+                result[result_size++] = strndup(&string[word_start], word_len);
                 if (result_size == result_cap) {
                     result_cap *= 2;
                     result = (char **)realloc(result, result_cap * sizeof(char *));
@@ -73,6 +82,7 @@ static char ** split(char * string)
         if (string[i] == '\0')
             break;
     }
+    result[result_size] = NULL;
     return result;
 }
 static void register_words(char * line)
@@ -218,8 +228,10 @@ int main(int argc, char ** argv)
             print_usage_and_exit();
         }
     }
-    if (use_completion)
+    if (use_completion) {
         history_database = HistoryDatabase_create(0);
+        init_seperator_chars();
+    }
     int child_argv_start = i;
     int child_argv_size = argc - child_argv_start + 1;
     if (child_argv_size <= 1)
