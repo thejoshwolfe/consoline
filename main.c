@@ -4,7 +4,7 @@
  */
 
 const char const * const usage[] = {
-    "consoline version 0.1",
+    "consoline version 0.2",
     "",
     "Usage:",
     "    consoline [consoline_options] command [command_args]",
@@ -16,7 +16,7 @@ const char const * const usage[] = {
     "",
     "    --no-completion",
     "            Turn off completion. The default is to complete from a database of",
-    "            all words seen so far in the stdout and stdin. TODO: implement",
+    "            all words seen so far in the stdout and stdin.",
     "",
     "    --hide-entered-lines",
     "            After lines are typed, make them disappear instead of staying on",
