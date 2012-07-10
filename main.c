@@ -4,7 +4,7 @@
  */
 
 const char const * const usage[] = {
-    "consoline version 0.2",
+    "consoline version 0.3",
     "",
     "Usage:",
     "    consoline [consoline_options] command [command_args]",
@@ -29,7 +29,7 @@ const char const * const usage[] = {
     "    consoline bash -c \"sleep 3; echo hello; bash\"",
     "",
     "To enable cycle-through completion behavior, add this to you ~/.inputrc:",
-    "    $if consoline"
+    "    $if consoline",
     "        \"\\t\": menu-complete",
     "    $endif",
     "",

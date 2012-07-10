@@ -33,6 +33,25 @@ static void handle_line_fake(char* line)
     }
 }
 
+static void async_print(void (*print_func)(void*), void* data)
+{
+    char* saved_line = rl_copy_text(0, rl_end);
+    int saved_point = rl_point;
+
+    rl_set_prompt("");
+    rl_replace_line("", 0);
+    rl_redisplay();
+    (*print_func)(data);
+
+    rl_set_prompt(current_prompt);
+    rl_replace_line(saved_line, 0);
+    rl_point = saved_point;
+    rl_redisplay();
+
+    free(saved_line);
+}
+
+
 static void done_with_input_line()
 {
     if (current_leave_entered_lines_on_stdout) {
@@ -91,6 +110,13 @@ static void remove_line_handler()
     rl_callback_handler_remove();
 }
 
+// hitting ctrl+c twice on a blank line will send a real SIGINT
+static char ctrl_c_should_propagate_anyway = 0;
+static void print_ctrl_c_message_func(void* nothing)
+{
+    printf("(^C again to quit)\n");
+}
+
 static char pending_ctrl_c = 0;
 void consoline_poll()
 {
@@ -98,9 +124,28 @@ void consoline_poll()
     memset(&no_time, 0, sizeof(no_time));
 
     for (;;) {
+
+        char* line = rl_copy_text(0, rl_end);
+        char input_line_is_blank = strcmp(line, "") == 0;
+        free(line);
+
+        if (!input_line_is_blank) {
+            // gotta be twice in a row to send a real SIGINT
+            ctrl_c_should_propagate_anyway = 0;
+        }
+
         if (pending_ctrl_c) {
             pending_ctrl_c = 0;
+
             done_with_input_line();
+
+            if (input_line_is_blank) {
+                // the first ctrl+c on a blank line
+                ctrl_c_should_propagate_anyway = 1;
+                // warn the user about it
+                async_print(print_ctrl_c_message_func, NULL);
+            }
+
             // print the prompt
             rl_redisplay();
         }
@@ -143,9 +188,12 @@ static void signal_handler(int code)
 {
     switch (code) {
         case SIGINT:
-            // don't do anything non-trivial in a signal handler
-            pending_ctrl_c = 1;
-            break;
+            if (!ctrl_c_should_propagate_anyway) {
+                // don't do anything non-trivial in a signal handler
+                pending_ctrl_c = 1;
+                break;
+            }
+            // otherwise, fallthrough
         case SIGQUIT:
         case SIGTERM:
             // cleanup readline
@@ -174,24 +222,6 @@ void consoline_set_ctrl_c_handled(char bool_value)
 void consoline_ignore_ctrl_c()
 {
     set_signal_handlers(SIG_IGN);
-}
-
-static void async_print(void (*print_func)(void*), void* data)
-{
-    char* saved_line = rl_copy_text(0, rl_end);
-    int saved_point = rl_point;
-
-    rl_set_prompt("");
-    rl_replace_line("", 0);
-    rl_redisplay();
-    (*print_func)(data);
-
-    rl_set_prompt(current_prompt);
-    rl_replace_line(saved_line, 0);
-    rl_point = saved_point;
-    rl_redisplay();
-
-    free(saved_line);
 }
 
 struct printf_data {
