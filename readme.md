@@ -1,30 +1,36 @@
 consoline is a GNU Readline wrapper.
-- Features/Limitations:
-    - Simplified interface to GNU Readline including dynamic completion.
-    - Don't use stdio.h. use consoline_println() or consoline_printfln(). You
+
+* Features/Limitations:
+  * Simplified interface to GNU Readline including dynamic completion.
+  * Don't use stdio.h. use consoline_println() or consoline_printfln(). You
       must print entire lines a time.
-    - Instead of blocking on a getter function, you poll on an interval and
+  * Instead of blocking on a getter function, you poll on an interval and
       react to lines of stdin with a callback function.
-    - Printing asynchronously while the user is typing a line of stdin does not
+  * Printing asynchronously while the user is typing a line of stdin does not
       interrupt the stdin line; it prints above it.
-- The core is contained in consoline.c and consoline.h, which are ready to be
+* The core is contained in consoline.c and consoline.h, which are ready to be
   dropped into a C or C++ project or be built into a library.
-- The program 'consoline' is the main target of the Makefil and defined in
+* The program 'consoline' is the main target of the Makefil and defined in
   main.c. It invokes a program and uses consoline to wrap stdin/stdout.
-- There is also a test.c which uses all the consoline core features. Build it
+* There is also a test.c which uses all the consoline core features. Build it
   with 'make test'. Run ./test and press the tab key twice to see its commands.
 
-
 Dependencies (Ubuntu):
-    sudo apt-get install libreadline-dev
+```
+sudo apt-get install libreadline-dev
+```
 
 Build:
-    make
+```
+make
+```
 
 For more info on the consoline core, see consoline.h.
 
 For more info on the consoline program, see the top of main.c, or run
+```
 ./consoline --help.
+```
 
 NOTE: if you're running python with this program, be sure to use python -u.
 
