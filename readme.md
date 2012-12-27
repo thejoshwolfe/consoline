@@ -40,5 +40,6 @@ make
 Using consoline as a Library
 ----------------------
 
-You can use some of this functionality as a library. See consoline.h and `make libconsoline.so`.
+You can use some of this functionality as a library (untested).
+See consoline.h and `make libconsoline.so`.
 
