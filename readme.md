@@ -18,13 +18,13 @@ NOTE: if you're running python with this program, be sure to use `python -u`.
 Bonus Features
 --------------
 
-* *Autocomplete* by pressing Tab.
+* **Autocomplete** by pressing Tab.
   The suggested words are all the words that have shown up in the input or the output.
   Disable with `--no-completion`.
-* *Ctrl+C* kills the input line, not the program;
+* **Ctrl+C** kills the input line, not the program;
   Ctrl+C twice on a blank line kills the program.
   Disable with `-c`.
-* Configurable *prompt*.
+* Configurable **prompt**.
   Example: `--prompt='>>> '`
 
 NOTE: consoline options must preceed the command to run.
