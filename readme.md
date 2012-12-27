@@ -1,36 +1,44 @@
-consoline is a GNU Readline wrapper.
+consoline
+=========
 
-* Features/Limitations:
-  * Simplified interface to GNU Readline including dynamic completion.
-  * Don't use stdio.h. use consoline_println() or consoline_printfln(). You
-      must print entire lines a time.
-  * Instead of blocking on a getter function, you poll on an interval and
-      react to lines of stdin with a callback function.
-  * Printing asynchronously while the user is typing a line of stdin does not
-      interrupt the stdin line; it prints above it.
-* The core is contained in consoline.c and consoline.h, which are ready to be
-  dropped into a C or C++ project or be built into a library.
-* The program 'consoline' is the main target of the Makefil and defined in
-  main.c. It invokes a program and uses consoline to wrap stdin/stdout.
-* There is also a test.c which uses all the consoline core features. Build it
-  with 'make test'. Run ./test and press the tab key twice to see its commands.
+consoline is GNU Readline with better support for asynchronous output.
 
-Dependencies (Ubuntu):
+This is recommended for the console interface for server programs that print
+messages to stdout while you're trying to type something on stdin.
+consoline ensures that your input line is uninterrupted by printing stdout
+above where you're typing the line of input.
+
+Usage
+-----
+```
+consoline [cmd...]
+```
+NOTE: if you're running python with this program, be sure to use `python -u`.
+
+Bonus Features
+--------------
+
+* *Autocomplete* by pressing Tab.
+  The suggested words are all the words that have shown up in the input or the output.
+  Disable with `--no-completion`.
+* *Ctrl+C* kills the input line, not the program;
+  Ctrl+C twice on a blank line kills the program.
+  Disable with `-c`.
+* Configurable *prompt*.
+  Example: `--prompt='>>> '`
+
+NOTE: consoline options must preceed the command to run.
+
+Build (Ubuntu)
+---------------------
+
 ```
 sudo apt-get install libreadline-dev
-```
-
-Build:
-```
 make
 ```
 
-For more info on the consoline core, see consoline.h.
+Using consoline as a Library
+----------------------
 
-For more info on the consoline program, see the top of main.c, or run
-```
-./consoline --help.
-```
-
-NOTE: if you're running python with this program, be sure to use python -u.
+You can use some of this functionality as a library. See consoline.h and `make libconsoline.so`.
 
