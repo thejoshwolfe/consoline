@@ -1,5 +1,4 @@
-consoline
-=========
+# consoline
 
 consoline is GNU Readline with better support for asynchronous output.
 
@@ -8,15 +7,15 @@ messages to stdout while you're trying to type something on stdin.
 consoline ensures that your input line is uninterrupted by printing stdout
 above where you're typing the line of input.
 
-Usage
------
+## Usage
+
 ```
 consoline [cmd...]
 ```
+
 NOTE: if you're running python with this program, be sure to use `python -u`.
 
-Bonus Features
---------------
+## Bonus Features
 
 * **Autocomplete** by pressing Tab.
   The suggested words are all the words that have shown up in the input or the output.
@@ -27,19 +26,16 @@ Bonus Features
 * Configurable **prompt**.
   Example: `--prompt='>>> '`
 
-NOTE: consoline options must preceed the command to run.
+NOTE: consoline options must precede the command to run.
 
-Build (Ubuntu)
----------------------
+## Build (Ubuntu)
 
 ```
 sudo apt-get install libreadline-dev
 make
 ```
 
-Using consoline as a Library
-----------------------
+## Using consoline as a Library
 
-You can use some of this functionality as a library (untested).
-See consoline.h and `make libconsoline.so`.
-
+You can use some of this functionality as a library.
+See consoline.h for the API and `make libconsoline.so`.
