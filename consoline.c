@@ -5,14 +5,14 @@
 
 #include "consoline.h"
 
-#include <readline/readline.h>
-#include <readline/history.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <signal.h>
 #include <errno.h>
 #include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 static const char* current_prompt = NULL;
 static char current_leave_entered_lines_on_stdout = 1;
